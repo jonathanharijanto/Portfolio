@@ -1,0 +1,215 @@
+#!/bin/bash
+
+# Created by Jonathan Harijanto
+# CS 344 HOMEWORK # 1
+# Purpose: This program prints average and median for either column or row from a file or stdin.
+# The format of the calling is "./stats -r myfile" for average and median of row,  "./stats -c myfile" for average and median of column   
+
+# This is a function that will do all the calculation and print for both average and median per row from the data inside the file
+# Reason: Put together in function calculate row to avoid complexity and miscalled of a function when the argument "-r*" being passed
+# CREDITS TO DANIEL (classmate) that post a round up / down technique at CANVAS, stackoverflow & unix forum (for inspiration)
+
+function calculate_row {
+	echo -e "Average\tMedian"
+	# This while loop will read the data per row, at the same time summing the number (sum) and calculate the length of the row (total)
+	while read -a row  
+	do
+		total=0
+		sum=0
+		# Basic for loop that will iterate from the read command, add all numbers up into sum while total keeps on incrementing
+		for i in "${row[@]}"
+		do
+			sum=`expr $sum + $i`
+			total=`expr $total + 1`
+		done
+
+		# This step is for the rounding, the problem is that bash always round up, but sometimes some numer can't just be round up
+		# since it will give inaccurate results
+ 		# remainder is used to get the remainder of the division for average, mult is to multiply the value of remainder by 10
+		# fractvalue is used to divide the value of mult with the length of the row
+		average=`expr $sum / $total`
+		remainder=`expr $sum % $total`
+		mult=`expr $remainder \* 10`
+		fracvalue=`expr $mult / $total`
+	
+		# This two lines is used for finding the median. The use of IFS because want to eliminate new lines, after that get the list of
+		# all the element of the array from read, then sort. This is intended to get well organized sorted lines of numbers that later can
+		# be grabbed row by row. While, len only used as a counter that remember the length of the row array
+		row=($(IFS=$'\n' ; echo "${row[*]}" | sort -n))
+		len=${#row[@]}
+
+		# This where the rounding process happens.
+ 
+		# If decimal number of the average is more than equal to 5, then rounds it up  
+		if (( "$fracvalue" >= 5 )); then
+			# Also, if length of row is even (for median purposes)
+			if (( len % 2 )); then 
+				# Round it up (that's what the + 1 is for a "manually" round up)  
+				average=$(( $average + 1 ))
+				# Then, print both the average and median value of that row at the same time
+				echo -e "$average \t${row[ len / 2]}"
+			else
+				# If length of the row is not even, then print both average and median value of that row
+				average=$(( $average + 1 ))
+				echo -e "$average \t${row[ len / 2]}"
+			fi 
+		# If the decimal numer of the average is less than 5, then rounds it down
+		elif (( "$fracvalue" < 5 )); then
+			# Check whether it is an even row or not, if yes
+			if (( len % 2 )); then 
+				# print both average and median value of that row
+				echo -e "$average \t${row[ len / 2]}"
+			else
+				echo -e "$average \t${row[ len / 2]}"
+			fi
+		fi
+	# Tell script that do all those command using this file ($TMP) 
+	done < $TMP
+}
+
+# This is a function that will do all the calculation and print for both average and median per column from the data inside the file
+# Reason: Put together in function calculate column to avoid complexity and miscalled of a function when the argument "-c*" being passed
+# CREDITS TO stackoverflow & unix forum (for inspiration)
+
+function calculate_col {
+echo "Average: "
+# These lines are used for average column
+# Read through the file
+while read line; do
+	# read and store into a new array
+	read -a array <<< "$line"
+	# summing all the numbers per column into an array, also increment x (count), to know
+	# how many numbers per column.   
+	for i in "${!array[@]}"
+	do
+		column[${i}]=$((${column[${i}]}+${array[$i]}))
+		((x[${i}]++))
+	done
+done < $TMP
+
+# Traverse the array that already contain the collection sums of each column	
+for i in ${!column[@]}
+do
+	# This is similar to calculate_row, the variables sum, len, average, mult, and fracvalue
+  	# are used to do the round up and round down process	
+	sum=${column[$i]}
+	len=${x[${i}]}
+	average=$(($sum/$len))
+	remainder=$(($sum%$len))
+	mult=`expr $remainder \* 10`
+	fracvalue=`expr $mult / $len`
+	# If the decimal from the average value is .5 or greater, then round up the number
+	# else, round down the number (average value per column) 
+	if (( "$fracvalue" >= 5 )); then
+		# Since bash always round down, this is a manual way to round up (by adding 1)
+		average=$(($average+1))	
+		echo -e -n "$average\t"
+		elif (( "$fracvalue" < 5 )); then
+			echo -e -n "$average\t"
+		fi
+	done
+
+	# These several lines are used for finding median column
+	echo -e "\nMedian:"
+	# Indication to start from column 1
+	len=1
+	# It reads the file while creating an array at the same time
+	while read -r -a array;
+	do
+		
+		((len++))
+		for i in "${!array[@]}"; 
+		do
+			#append each value of the column into an array called column
+			column[i]+="${array[i]}"$'\n'
+		done
+	# read all the input from this temporary files
+	done < $TMP
+
+
+	# This is similar to calculate_row, only different concepts
+	# It gets the length of the column, then divided by 2. Since bash is rounding down, thus
+	# when odd number is being divided, it needs to add by 1 to get the middle value. Example: middle
+	# value of 9 numbers is at the 5th, thus if using bash division it  gets 4 due to round down. Thus
+	# add by 1. For even number, since take the greatest value, it always take round up position   
+	midrow=$((1+len/2))
+	result=''
+	for i in "${!column[@]}"; do
+		# sort the array so it will result in a sort from smallest to largest value
+		# per column, and ready to be grabbed the middle value, due to calling $midrow in head, with echo
+		median=$(sort -n <<< "${column[i]}" | head -n "$midrow" | tail -n 1)
+		echo -e -n "$median\t"
+		result+="$median"
+	done
+	echo -e -n "\n"	
+}
+	
+# Function that will remove "forcefully" the temporary files created within this script
+# Separated into a new for the "rm -f" because looks cleaner for the code to see "trap clean_up"
+# instead of "trap "rm -f $TMP"
+function clean_up {
+	rm -f $TMP
+}
+
+# Check whether the argument passed is one. One argument in this case mean input comes from stdin
+# not passed by a file, since in "./stats -r < file1", argument after special character is not counted
+# Thus if only one argument being passed, it tells the script to expect input from stdin instead  
+if [ "$#" -eq 1 ]; then 
+	# The [ ! -t 0 ] tells the script to expect some input from stdin, where -t stands for terminal
+	if [ ! -t 0 ]; then
+		# Get the value of the argument from the stdin into FILENAME
+		FILENAME=${2:-/dev/stdin}
+		# Create temporary files
+		TMP=./TMP$$
+		# Trap statement that will call "clean_up" function. EXIT is bash specific signal,
+		# it means no matter how shell exit because of what interruption, it just going to
+		# call the trap
+		trap clean_up EXIT 
+		# Provides the path data from FILENAME into temporary files
+		cat $FILENAME > $TMP
+		# Restriction for the script to execut, the input row must be start with lower case r and 
+		# can be continue with any random alphabet. Reject if starts with upper case R. It also
+		# apply the same with column. Else, if the input is other than -r or -c, output error message  
+		case "$1" in
+			# Call function calculate_row
+			-r*)calculate_row exit 0;;
+			-R*)echo "./stats {-rows|-cols} [file]" >&2; exit 1;;
+			# Call function calculate_col
+			-c*)calculate_col exit 0;;
+			-C*)echo "./stats {-rows|-cols} [file]" >&2; exit 1;;
+			*)echo "./stats {-rows|-cols} [file]" >&2; exit 1;;
+		esac
+	fi
+# Chechk whether the argument passed is two. Two arguments mean that input comes passed from a file
+elif [ "$#" -eq 2 ]; then
+		# Grab the path of that file into FILENAME	
+		FILENAME=$2
+		# Conditions if the file passed is readable or not. If not, just skip it and output error
+		# This is useful since it saves a lot of time if ignore some empty or non readable file
+		if [ ! -r "$FILENAME" ]; then
+			echo "./stats: cannot read $FILENAME" >&2
+			exit 1
+		# Condition is the file passed is readable 
+		else
+			TMP=./TMP$$
+			# Trap statement that will call "clean_up" function. EXIT is bash specific signal,
+			# it means no matter how shell exit because of what interruption, it just going to
+			# call the trap
+			trap clean_up EXIT 
+			# Provides the path of data from FILENAME into temporary files
+			cat $FILENAME > $TMP
+			case "$1" in
+				-r*)calculate_row exit 0;;
+				-R*)echo "./stats {-rows|-cols} [file]" >&2; exit 1;;
+				-c*)calculate_col exit 0;;
+				-C*)echo "./stats {-rows|-cols} [file]" >&2; exit 1;;
+				*)echo "./stats {-rows|-cols} [file]" >&2; exit 1;;
+			esac
+		fi
+# Check if the arguments passed is more than 2. More than two arguments is invalid, that's why no need to process
+# any further just reject with error message. This also used to save times.
+elif [ "$#" -ne 2 ]; then	
+	echo "./stats {-rows|-cols} [file]" >&2
+	exit 1
+fi
+
