@@ -1,0 +1,15 @@
+Golf,Playing golf with stunning landscape,Gresham,3,Yes,Happy hour available during weekend;
+Climbing,Climbing will never be the same if you will see tremendous view while climb,Salem,3,Yes,Free transport service within 5 miles from our place;
+Kayaking,Water sport where two people paddling small boat,Salem,3,No,Special promo for student;
+Biking,Ride a bike with unsual route and stunning landscape,Eugene,2,Yes,Bike Parade every Saturday morning;
+Running,Run in the real olympic race track,Corvallis,2,No,No additional information;
+Soccer,Playing soccer in Manchester United practice field,Beaverton,2,Yes,Bring your student id to get a chance to meet Robin Van Persie;
+Walking,Walking with accompany by the great weather and city,Portland,1,No,Free Voodoo doughnut;
+Diving,Enjoy the stunning underwater panorama,Coast,4,Yes,Special price for family;
+Rafting,Water sport with your friend with stunning view of jungle,Clackamas,3,No,Bring your student ID to get 50% discount;
+Windsurfing,Enjoy the uniqueness of this combined water sport with your friend,Coast,3,No,Free one hour lesson if you rent for 4 or more people;
+Camping,Love the beautiful view at night with your family & friends,Hillsboro,2,Yes,We also provide all types of equipment you need for camp;
+Paragliding,One of the tremendous outdoor fun activity,Coast,3,No,Pay 1 for 2 people;
+Fishing,Have fun experiencing become a fisherman,Clackamas,2,Yes,Free 5 special baits for first-timer;
+Crabbing,Catch and eat your own catch,Coast,2,Yes,This activity is free of charge;
+Hiking,Enjoy the exhilarating hiking activities together with the beautiful scenery,Gresham,3,Yes,Tour guide available during summer;

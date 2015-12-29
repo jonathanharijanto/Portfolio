@@ -1,0 +1,6 @@
+1200;1809;4;Gresham;non-smoking;fenced yard;single car garage 
+400;706;1;Hillsboro;amazing balcony view;friendly neighbor;cheap price 
+1000;1240;2;Beaverton;modern apartment;quite apartment;walking distance to hospital 
+2200;2000;5;Portland;luxury apartment;pearl district area;cats and dogs ok 
+800;860;2;Beaverton;full furnished apartment;fitness center;competitive price 
+1500;1678;3;Clackamas;convenient location;full size dryer and washer;free garage
